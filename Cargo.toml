@@ -1,0 +1,28 @@
+[package]
+authors = ["Emerentius <Emerentius@arcor.de>"]
+name = "rustoku-cli"
+version = "0.5.0"
+license = "AGPL-3.0"
+
+[[bin]]
+name = "rustoku"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "3.2.25", features = ["derive","cargo"] }
+rayon = "1.8.0"
+
+[dependencies.sudoku]
+version = "0.7.0"
+features = ["unchecked_indexing"]
+git = "https://github.com/Antidote1911/sudoku"
+# rev = "a22307afd36f6fbe0ad34bb87a33a5827873d771"
+
+[features]
+# With this feature, multithreading is used unless the --no-parallel flag is passed
+# Otherwise a single thread is used unless --parallel is passed
+parallel_by_default = []
+
+[profile.release]
+lto = true
+codegen-units = 1
