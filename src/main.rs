@@ -7,7 +7,7 @@ use sudoku::Sudoku;
 extern crate rayon;
 use rayon::prelude::*;
 
-use clap::{App, Arg, SubCommand};
+use clap::{Arg, Command};
 use std::io::{self, Read, Write};
 use sudoku::errors::LineParseError;
 
@@ -255,97 +255,95 @@ fn actions_object(mut parallel: bool, no_parallel: bool) -> ActionsKind {
 }
 
 fn main() {
-    let mut app = App::new("rustoku")
+    let mut app = Command::new("rustoku")
         .version(crate_version!())
         .about("Solves and generates sudokus")
         .subcommand(
-            SubCommand::with_name("solve")
+            Command::new("solve")
                 .about("Solve sudokus")
                 .arg(
-                    Arg::with_name("sudokus_file")
-                        .takes_value(true)
+                    Arg::new("sudokus_file")
                         .value_name("FILE")
-                        .multiple(true)
+                        .multiple_occurrences(true)
                 )
                 .arg(
-                    Arg::with_name("statistics")
+                    Arg::new("statistics")
                         .long("stat")
                         .short('s')
                         .help("do not print solutions, but categorize sudokus by solution count (1, >1, 0) and measure solving speed")
                 )
                 .arg(
-                    Arg::with_name("parallel")
+                    Arg::new("parallel")
                         .long("parallel")
                         .short('p')
                         .overrides_with("no-parallel")
                         .help("Use multiple threads")
                 )
                 .arg(
-                    Arg::with_name("no-parallel")
+                    Arg::new("no-parallel")
                         .long("no-parallel")
                         .overrides_with("parallel")
                         .help("Do not use multiple threads")
                 )
         )
         .subcommand(
-            SubCommand::with_name("generate")
+            Command::new("generate")
                 .about("Generate sudokus")
                 .arg(
-                    Arg::with_name("amount")
+                    Arg::new("amount")
                         .takes_value(true)
                         .required(true)
                 )
                 .arg(
-                    Arg::with_name("print-block")
+                    Arg::new("print-block")
                         .long("print-block")
                         .short('b')
                         .help("print sudokus as blocks")
                 )
                 .arg(
-                    Arg::with_name("solved")
+                    Arg::new("solved")
                         .help("generate solved sudokus")
                         .long("solved")
                 )
                 .arg(
-                    Arg::with_name("parallel")
+                    Arg::new("parallel")
                         .long("parallel")
                         .short('p')
                         .overrides_with("no-parallel")
                         .help("Use multiple threads")
                 )
                 .arg(
-                    Arg::with_name("no-parallel")
+                    Arg::new("no-parallel")
                         .long("no-parallel")
                         .overrides_with("parallel")
                         .help("Do not use multiple threads")
                 )
         )
         .subcommand(
-            SubCommand::with_name("shuffle")
+            Command::new("shuffle")
                 .about("Create different, but equivalent sudokus")
                 .long_about("Performs symmetry transformations (swapping digits, stacks, bands, rows within bands, columns within stacks and mirroring at the diagonal) to generate random different, but equivalent sudokus")
                 .arg(
                     // TODO: Decide on how to unify amount (on generate option) and count
-                    Arg::with_name("count")
+                    Arg::new("count")
                         .takes_value(true)
                         .short('n')
                 )
                 .arg(
-                    Arg::with_name("sudokus_file")
-                        .takes_value(true)
+                    Arg::new("sudokus_file")
                         .value_name("FILE")
-                        .multiple(true)
+                        .multiple_occurrences(true)
                 )
         )
         .subcommand(
-            SubCommand::with_name("canonicalize")
+            Command::new("canonicalize")
                 .about("Find the lexicographically minimal, equivalent sudoku")
                 .long_about("Performs symmetry transformations (swapping digits, stacks, bands, rows within bands, columns within stacks and mirroring at the diagonal) to find the lexicographically minimal, equivalent sudoku.\nThe number of transformations resulting in the same sudoku (automorphisms) is given after each sudoku's canonical version. It is at least 1 (identity transformation) and at most 648.")
                 .arg(
-                    Arg::with_name("sudokus_file")
+                    Arg::new("sudokus_file")
                         .takes_value(true)
                         .value_name("FILE")
-                        .multiple(true)
+                        .multiple_occurrences(true)
                 )
         );
     let matches = app.clone().get_matches();
@@ -355,10 +353,10 @@ fn main() {
     //let mut sudoku_buffer = String::new();
 
     if let Some(matches) = matches.subcommand_matches("solve") {
-        let statistics = matches.is_present("statistics");
+        let statistics = matches.contains_id("statistics");
         let action = actions_object(
-            matches.is_present("parallel"),
-            matches.is_present("no_parallel"),
+            matches.contains_id("parallel"),
+            matches.contains_id("no_parallel"),
         );
 
         // without printing solutions, print the header once
@@ -376,21 +374,21 @@ fn main() {
         };
         read_sudokus_and_execute(matches, action);
     } else if let Some(matches) = matches.subcommand_matches("generate") {
-        let amount = value_t_or_exit!(matches.value_of("amount"), usize);
+        let amount = matches.value_of_t_or_exit::<usize>("amount");
         let gen_sud = match matches.is_present("solved") {
             true => Sudoku::generate_solved,
             false => Sudoku::generate,
         };
         let action = actions_object(
-            matches.is_present("parallel"),
-            matches.is_present("no_parallel"),
+            matches.contains_id("parallel"),
+            matches.contains_id("no_parallel"),
         );
-        let print_blocks = matches.is_present("print-block");
+        let print_blocks = matches.contains_id("print-block");
 
         action.gen_sudokus(amount, gen_sud, print_blocks);
     } else if let Some(matches) = matches.subcommand_matches("shuffle") {
-        let amount = value_t!(matches.value_of("count"), usize).unwrap_or(1);
 
+        let amount=matches.value_of_t::<usize>("count").unwrap_or(1);
         let action = |_: Option<&std::path::Path>, buffer: &str| {
             let stdout = std::io::stdout();
             let mut lock = stdout.lock();
