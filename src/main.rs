@@ -7,7 +7,7 @@ use sudoku::Sudoku;
 extern crate rayon;
 use rayon::prelude::*;
 
-use clap::{Arg, Command};
+use clap::{Arg, ArgAction, Command};
 use std::io::{self, Read, Write};
 use sudoku::errors::LineParseError;
 
@@ -264,7 +264,7 @@ fn main() {
                 .arg(
                     Arg::new("sudokus_file")
                         .value_name("FILE")
-                        .multiple_occurrences(true)
+                        .action(ArgAction::Append)
                 )
                 .arg(
                     Arg::new("statistics")
@@ -332,7 +332,7 @@ fn main() {
                 .arg(
                     Arg::new("sudokus_file")
                         .value_name("FILE")
-                        .multiple_occurrences(true)
+                        .action(ArgAction::Append)
                 )
         )
         .subcommand(
@@ -343,7 +343,7 @@ fn main() {
                     Arg::new("sudokus_file")
                         .takes_value(true)
                         .value_name("FILE")
-                        .multiple_occurrences(true)
+                        .action(ArgAction::Append)
                 )
         );
     let matches = app.clone().get_matches();
@@ -374,7 +374,9 @@ fn main() {
         };
         read_sudokus_and_execute(matches, action);
     } else if let Some(matches) = matches.subcommand_matches("generate") {
-        let amount = matches.value_of_t_or_exit::<usize>("amount");
+
+        let amount = *matches.get_one::<usize>("amount").unwrap();
+
         let gen_sud = match matches.is_present("solved") {
             true => Sudoku::generate_solved,
             false => Sudoku::generate,
@@ -388,7 +390,9 @@ fn main() {
         action.gen_sudokus(amount, gen_sud, print_blocks);
     } else if let Some(matches) = matches.subcommand_matches("shuffle") {
 
-        let amount=matches.value_of_t::<usize>("count").unwrap_or(1);
+
+        let amount=*matches.get_one::<usize>("count").unwrap_or(&1);
+
         let action = |_: Option<&std::path::Path>, buffer: &str| {
             let stdout = std::io::stdout();
             let mut lock = stdout.lock();
