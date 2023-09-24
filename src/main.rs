@@ -223,7 +223,7 @@ where
 {
     let mut sudoku_buffer = String::new();
 
-    if let Some(filenames) = matches.values_of("sudokus_file") {
+    if let Some(filenames) = matches.get_many::<String>("sudokus_file") {
         for filename in filenames {
             let path = std::path::Path::new(filename);
 
@@ -291,8 +291,8 @@ fn main() {
                 .about("Generate sudokus")
                 .arg(
                     Arg::new("amount")
-                        .takes_value(true)
                         .required(true)
+                        .value_parser(clap::value_parser!(usize))
                 )
                 .arg(
                     Arg::new("print-block")
@@ -326,8 +326,8 @@ fn main() {
                 .arg(
                     // TODO: Decide on how to unify amount (on generate option) and count
                     Arg::new("count")
-                        .takes_value(true)
                         .short('n')
+                        .value_parser(clap::value_parser!(usize))
                 )
                 .arg(
                     Arg::new("sudokus_file")
@@ -341,7 +341,6 @@ fn main() {
                 .long_about("Performs symmetry transformations (swapping digits, stacks, bands, rows within bands, columns within stacks and mirroring at the diagonal) to find the lexicographically minimal, equivalent sudoku.\nThe number of transformations resulting in the same sudoku (automorphisms) is given after each sudoku's canonical version. It is at least 1 (identity transformation) and at most 648.")
                 .arg(
                     Arg::new("sudokus_file")
-                        .takes_value(true)
                         .value_name("FILE")
                         .action(ArgAction::Append)
                 )
@@ -377,7 +376,7 @@ fn main() {
 
         let amount = *matches.get_one::<usize>("amount").unwrap();
 
-        let gen_sud = match matches.is_present("solved") {
+        let gen_sud = match matches.contains_id("solved") {
             true => Sudoku::generate_solved,
             false => Sudoku::generate,
         };
@@ -391,7 +390,7 @@ fn main() {
     } else if let Some(matches) = matches.subcommand_matches("shuffle") {
 
 
-        let amount=*matches.get_one::<usize>("count").unwrap_or(&1);
+        let amount:usize = *matches.get_one::<usize>("count").unwrap_or(&1);
 
         let action = |_: Option<&std::path::Path>, buffer: &str| {
             let stdout = std::io::stdout();
