@@ -343,6 +343,5 @@ fn main() {
             };
             read_sudokus_and_execute(&sudokus_file, action);
         }
-
     }
 }

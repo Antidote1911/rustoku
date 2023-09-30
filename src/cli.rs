@@ -1,5 +1,6 @@
 use clap::{arg, Parser, Subcommand};
 use std::path::PathBuf;
+
 const AUTHOR: &str = "
 Author : Fabrice Corraire <antidote1911@gmail.com>
 Github : https://github.com/Antidote1911/";
@@ -42,12 +43,11 @@ pub fn get_styles() -> clap::builder::Styles {
         )
 }
 
-
 #[derive(Debug, Parser)]
 #[command(styles=get_styles())]
 #[command(about, author=AUTHOR, version)]
 #[command(
-help_template = "{about-section}Version: {version} {author} \n\n {usage-heading} \n {usage} \n\n {all-args} \n {tab}"
+    help_template = "{about-section}Version: {version} {author} \n\n {usage-heading} \n {usage} \n\n {all-args} \n {tab}"
 )]
 pub struct Cli {
     #[command(subcommand)]
