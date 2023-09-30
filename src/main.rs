@@ -2,16 +2,17 @@ mod cli;
 
 extern crate sudoku;
 
+use clap::Parser;
 use std::io::{self, Read, Write};
-use clap::{Args, Command, FromArgMatches, Parser};
+use std::path::PathBuf;
 
-extern crate rayon;
 extern crate clap;
+extern crate rayon;
 
+use cli::{Cli, Commands};
 use rayon::prelude::*;
 use sudoku::errors::LineParseError;
 use sudoku::Sudoku;
-use cli::{Cli, Commands};
 
 enum ActionsKind {
     Single(SingleThreaded),
@@ -219,14 +220,14 @@ fn read_stdin(buffer: &mut String) {
     let _ = lock.read_to_string(buffer);
 }
 
-fn read_sudokus_and_execute<F>(matches: &clap::ArgMatches, mut callback: F)
-    where
-        F: FnMut(Option<&std::path::Path>, &str),
+fn read_sudokus_and_execute<F>(matches: &Vec<PathBuf>, mut callback: F)
+where
+    F: FnMut(Option<&std::path::Path>, &str),
 {
     let mut sudoku_buffer = String::new();
 
-    if let Some(filenames) = matches.get_many::<String>("sudokus_file") {
-        for filename in filenames {
+    if !matches.is_empty() {
+        for filename in matches {
             let path = std::path::Path::new(filename);
 
             let mut file = match std::fs::File::open(path) {
@@ -243,7 +244,6 @@ fn read_sudokus_and_execute<F>(matches: &clap::ArgMatches, mut callback: F)
     } else {
         read_stdin(&mut sudoku_buffer);
         callback(None, &sudoku_buffer);
-
     }
 }
 
@@ -257,53 +257,92 @@ fn actions_object(mut parallel: bool, no_parallel: bool) -> ActionsKind {
     }
 }
 
-
 ///////////////////////////////////
 
 fn main() {
-    let mut app = Cli::parse();
-    let cli = Command::new("CLI");
-    let cli = Cli::augment_args(cli);
-    let matches = cli.get_matches();
+    let cli = Cli::parse();
 
-
-
-
-
-    if let Some(matches) = matches.subcommand_matches("solve") {
-        let statistics = matches.get_flag("statistics");
-        let action = actions_object(
-            matches.get_flag("parallel"),
-            matches.get_flag("no_parallel"),
-        );
-        // without printing solutions, print the header once
-        // with solutions print it just before statistics
-        if statistics {
-            println!(
-                "{:>9} {:>9} {:>9} {:>9} {:>10} {:>10} ",
-                "total", "unique", "nonunique", "invalid", "time [s]", "sudokus/s"
-            );
+    match cli.command {
+        Commands::Solve {
+            sudokus_file,
+            statistics,
+            no_parallel,
+            parallel,
+        } => {
+            if statistics {
+                println!(
+                    "{:>9} {:>9} {:>9} {:>9} {:>10} {:>10} ",
+                    "total", "unique", "nonunique", "invalid", "time [s]", "sudokus/s"
+                );
+            }
+            let action = actions_object(parallel, no_parallel);
+            let action = |path: Option<&std::path::Path>, buffer: &str| match statistics {
+                false => action.solve_and_print(buffer, path),
+                true => action.solve_and_print_stats(buffer, path, statistics),
+            };
+            read_sudokus_and_execute(&sudokus_file, action);
         }
 
-        let action = |path: Option<&std::path::Path>, buffer: &str| match statistics {
-            false => action.solve_and_print(buffer, path),
-            true => action.solve_and_print_stats(buffer, path, statistics),
-        };
-        read_sudokus_and_execute(matches, action);
-    } else if let Some(matches) = matches.subcommand_matches("generate") {
-        let amount = *matches.get_one::<usize>("amount").unwrap();
+        Commands::Generate {
+            amount,
+            block,
+            solved,
+            parallel,
+            no_parallel,
+        } => {
+            let gen_sud = match solved {
+                true => Sudoku::generate_solved,
+                false => Sudoku::generate,
+            };
+            let action = actions_object(parallel, no_parallel);
+            action.gen_sudokus(amount.unwrap(), gen_sud, block);
+        }
+        Commands::Shuffle {
+            sudokus_file,
+            amount,
+        } => {
+            let action = |_: Option<&std::path::Path>, buffer: &str| {
+                let stdout = io::stdout();
+                let mut lock = stdout.lock();
+                for sudoku in buffer.lines().map(Sudoku::from_str_line) {
+                    let mut sudoku = match sudoku {
+                        Ok(s) => s,
+                        Err(e) => {
+                            let _ = eprintln!("invalid sudoku: {}", e);
+                            continue;
+                        }
+                    };
 
-        let gen_sud = match matches.get_flag("solved") {
-            true => Sudoku::generate_solved,
-            false => Sudoku::generate,
-        };
-        let action = actions_object(
-            matches.get_flag("parallel"),
-            matches.get_flag("no_parallel"),
-        );
-        let print_blocks = matches.get_flag("block");
+                    for _ in 0..amount.unwrap() {
+                        sudoku.shuffle();
+                        let _ = writeln!(lock, "{}", sudoku);
+                    }
+                }
+            };
+            read_sudokus_and_execute(&sudokus_file, action);
+        }
+        Commands::Canonicalize { sudokus_file } => {
+            let action = |_: Option<&std::path::Path>, buffer: &str| {
+                let stdout = std::io::stdout();
+                let mut lock = stdout.lock();
+                for sudoku in buffer.lines().map(Sudoku::from_str_line) {
+                    let sudoku = match sudoku {
+                        Ok(s) => s,
+                        Err(e) => {
+                            let _ = eprintln!("invalid sudoku: {}", e);
+                            continue;
+                        }
+                    };
 
-        action.gen_sudokus(amount, gen_sud, print_blocks);
+                    if let Some((canonical, automorphisms)) = sudoku.canonicalized() {
+                        let _ = writeln!(lock, "{} {}", canonical, automorphisms);
+                    } else {
+                        let _ = writeln!(lock, "{} not valid or not solved", sudoku);
+                    }
+                }
+            };
+            read_sudokus_and_execute(&sudokus_file, action);
+        }
+
     }
-
 }

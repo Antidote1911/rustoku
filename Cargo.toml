@@ -3,13 +3,15 @@ authors = ["Emerentius <Emerentius@arcor.de>"]
 name = "rustoku-cli"
 version = "0.5.0"
 license = "AGPL-3.0"
+description = """A Sudoku solver and generator"""
 
 [[bin]]
 name = "rustoku"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.4.4", features = ["derive", "cargo"] }
+clap = { version = "4.4.6", features = ["derive", "cargo", "unstable-styles"] }
+anstyle = "1.0.4"
 rayon = "1.8.0"
 
 [dependencies.sudoku]
