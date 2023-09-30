@@ -1,5 +1,4 @@
 mod cli;
-
 extern crate sudoku;
 
 use clap::Parser;
