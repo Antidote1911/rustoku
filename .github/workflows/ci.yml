@@ -1,4 +1,4 @@
-name: CI
+name: Cargo Build
 on: [pull_request, push]
 env:
   CARGO_INCREMENTAL: 0

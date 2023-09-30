@@ -1,4 +1,9 @@
 # CLI sudoku solver and generator
+[![CI](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml/badge.svg?style=flat-square)](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml)
+[![License: GPL3](https://img.shields.io/badge/License-AGPL3-green.svg?style=flat-square)](https://opensource.org/licenses/AGPL-3.0)
+[![made-with-rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg?style=flat-square)](https://www.rust-lang.org/)
+
+Latest Windows, Linux and other releases are [here](https://github.com/Antidote1911/rustoku/releases/latest).
 
 This program exposes functionality of the Rust sudoku library for testing purposes.
 The solver is very fast, capable of solving sudokus in 2-200μs depending on difficulty on a 15W laptop cpu (i5 4210u).
