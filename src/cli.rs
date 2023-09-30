@@ -1,5 +1,6 @@
-use clap::{arg, Parser, Subcommand};
 use std::path::PathBuf;
+
+use clap::{arg, Parser, Subcommand};
 
 const AUTHOR: &str = "
 Author : Fabrice Corraire <antidote1911@gmail.com>

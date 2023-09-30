@@ -1,17 +1,19 @@
 mod cli;
 extern crate sudoku;
 
+use std::{
+    io::{self, Read, Write},
+    path::PathBuf,
+};
+
 use clap::Parser;
-use std::io::{self, Read, Write};
-use std::path::PathBuf;
 
 extern crate clap;
 extern crate rayon;
 
 use cli::{Cli, Commands};
 use rayon::prelude::*;
-use sudoku::errors::LineParseError;
-use sudoku::Sudoku;
+use sudoku::{errors::LineParseError, Sudoku};
 
 enum ActionsKind {
     Single(SingleThreaded),
@@ -181,7 +183,7 @@ fn _print_stats<I: Iterator<Item = Result<usize, LineParseError>>>(
             Ok(1) => n_solved += 1,
             Ok(_) => n_non_unique += 1,
             Err(e) => {
-                let _ = eprintln!("invalid sudoku: {}", e);
+                eprintln!("invalid sudoku: {}", e);
                 n_invalid += 1;
             }
         };
@@ -210,7 +212,7 @@ fn _print_stats<I: Iterator<Item = Result<usize, LineParseError>>>(
     if let Some(path) = path {
         let _ = write!(lock, "{}", path.display());
     }
-    let _ = write!(lock, "\n");
+    let _ = writeln!(lock);
 }
 
 fn read_stdin(buffer: &mut String) {
@@ -307,7 +309,7 @@ fn main() {
                     let mut sudoku = match sudoku {
                         Ok(s) => s,
                         Err(e) => {
-                            let _ = eprintln!("invalid sudoku: {}", e);
+                            eprintln!("invalid sudoku: {}", e);
                             continue;
                         }
                     };
@@ -328,7 +330,7 @@ fn main() {
                     let sudoku = match sudoku {
                         Ok(s) => s,
                         Err(e) => {
-                            let _ = eprintln!("invalid sudoku: {}", e);
+                            eprintln!("invalid sudoku: {}", e);
                             continue;
                         }
                     };

@@ -1,0 +1,10 @@
+[licenses]
+allow = [
+    "BSD-2-Clause",
+    "CC0-1.0",
+]
+allow-osi-fsf-free = "both"
+exceptions = [
+    { allow = ["AGPL-3.0"], name = "rustoku" },
+    { allow = ["Unicode-DFS-2016"], name = "unicode-ident" },
+]
