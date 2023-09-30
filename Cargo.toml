@@ -3,7 +3,7 @@ authors = ["Emerentius <Emerentius@arcor.de>"]
 name = "rustoku-cli"
 version = "0.5.0"
 license = "AGPL-3.0"
-description = """A Sudoku solver and generator"""
+description = """🦀 A Sudoku solver and generator"""
 
 [[bin]]
 name = "rustoku"

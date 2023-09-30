@@ -1,4 +1,4 @@
-# CLI sudoku solver and generator
+# 🦀 CLI sudoku solver and generator
 [![CI](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml/badge.svg)](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml)
 [![License: AGPL3](https://img.shields.io/badge/License-AGPL3-green.svg)](https://opensource.org/licenses/AGPL-3.0)
 [![made-with-rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg)](https://www.rust-lang.org/)
