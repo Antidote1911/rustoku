@@ -1,7 +1,8 @@
 # CLI sudoku solver and generator
-[![CI](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml/badge.svg?style=flat-square)](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml)
-[![License: GPL3](https://img.shields.io/badge/License-AGPL3-green.svg?style=flat-square)](https://opensource.org/licenses/AGPL-3.0)
-[![made-with-rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg?style=flat-square)](https://www.rust-lang.org/)
+[![CI](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml/badge.svg)](https://github.com/Antidote1911/rustoku/actions/workflows/ci.yml)
+[![License: AGPL3](https://img.shields.io/badge/License-AGPL3-green.svg)](https://opensource.org/licenses/AGPL-3.0)
+[![made-with-rust](https://img.shields.io/badge/Made%20with-Rust-1f425f.svg)](https://www.rust-lang.org/)
+[![GitHub release (with filter)](https://img.shields.io/github/v/release/Antidote1911/rustoku)](https://github.com/Antidote1911/rustoku/releases/latest)
 
 Latest Windows, Linux and other releases are [here](https://github.com/Antidote1911/rustoku/releases/latest).
 
