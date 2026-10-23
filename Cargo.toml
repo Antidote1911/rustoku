@@ -1,7 +1,7 @@
 [package]
 authors = ["Antidote1911 <antidote1911@gmail.com>"]
 name = "rustoku-cli"
-version = "0.5.1"
+version = "0.6.0"
 license = "AGPL-3.0"
 description = """🦀 A Sudoku solver and generator"""
 
