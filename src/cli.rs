@@ -109,4 +109,17 @@ pub enum Commands {
         #[arg(value_name = "FILE", value_delimiter = ',')]
         sudokus_file: Vec<PathBuf>,
     },
+    /// Read and solve sudokus from pictures
+    #[cfg(feature = "vision")]
+    Photo {
+        /// Pictures containing one or more sudoku grids
+        #[arg(value_name = "IMAGE", required = true)]
+        images: Vec<PathBuf>,
+        /// Display solutions as blocks
+        #[clap(short)]
+        block: bool,
+        /// Save the rectified and binarized grids in this directory
+        #[clap(long, value_name = "DIR")]
+        debug: Option<PathBuf>,
+    },
 }

@@ -13,6 +13,8 @@ path = "src/main.rs"
 clap = { version = "4.5.4", features = ["derive", "cargo", "unstable-styles"] }
 anstyle = "1.0.7"
 rayon = "1.10.0"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp", "bmp"], optional = true }
+imageproc = { version = "0.27.0", default-features = false, optional = true }
 
 [dependencies.sudoku]
 # version = "0.7.0"
@@ -20,6 +22,9 @@ features = ["unchecked_indexing"]
 git = "https://github.com/Antidote1911/sudoku"
 
 [features]
+default = ["vision"]
+# Reading sudokus from pictures (`rustoku photo`)
+vision = ["dep:image", "dep:imageproc"]
 # With this feature, multithreading is used unless the --no-parallel flag is passed
 # Otherwise a single thread is used unless --parallel is passed
 parallel_by_default = []
@@ -27,3 +32,10 @@ parallel_by_default = []
 [profile.release]
 lto = true
 codegen-units = 1
+
+[dev-dependencies]
+ab_glyph = "0.2.32"
+
+[[example]]
+name = "gen_digits"
+required-features = ["vision"]

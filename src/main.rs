@@ -9,7 +9,14 @@ use std::{
 use clap::Parser;
 
 extern crate clap;
+#[cfg(feature = "vision")]
+extern crate image;
+#[cfg(feature = "vision")]
+extern crate imageproc;
 extern crate rayon;
+
+#[cfg(feature = "vision")]
+mod vision;
 
 use cli::{Cli, Commands};
 use rayon::prelude::*;
@@ -344,5 +351,87 @@ fn main() {
             };
             read_sudokus_and_execute(&sudokus_file, action);
         }
+        #[cfg(feature = "vision")]
+        Commands::Photo {
+            images,
+            block,
+            debug,
+        } => {
+            for path in &images {
+                let readings = match vision::read_picture(path, debug.as_deref()) {
+                    Ok(r) => r,
+                    Err(e) => {
+                        eprintln!("{}: {}", path.display(), e);
+                        continue;
+                    }
+                };
+                if readings.is_empty() {
+                    eprintln!("{}: no sudoku grid found", path.display());
+                }
+                for (i, reading) in readings.iter().enumerate() {
+                    print_photo_resolution(
+                        path,
+                        i,
+                        readings.len(),
+                        &vision::resolve(reading),
+                        block,
+                    );
+                }
+            }
+        }
+    }
+}
+
+#[cfg(feature = "vision")]
+fn print_photo_resolution(
+    path: &std::path::Path,
+    index: usize,
+    count: usize,
+    resolution: &vision::Resolution,
+    block: bool,
+) {
+    use vision::Status;
+
+    if count > 1 {
+        println!("{} [{}/{}]", path.display(), index + 1, count);
+    } else {
+        println!("{}", path.display());
+    }
+    println!("  read     : {}", resolution.grid);
+    for &(cell, read, kept) in &resolution.corrections {
+        let show = |d: u8| if d == 0 { '.' } else { char::from(b'0' + d) };
+        println!(
+            "  corrected: r{}c{} {} -> {}",
+            cell / 9 + 1,
+            cell % 9 + 1,
+            show(read),
+            show(kept)
+        );
+    }
+    let (label, solution) = match resolution.status {
+        Status::Unique(s) => ("solution ", s),
+        Status::Multiple(s) => ("not unique, one solution", s),
+        Status::Unsolvable => {
+            let conflicts = vision::conflicts(&resolution.grid);
+            if conflicts.is_empty() {
+                println!("  no solution");
+            } else {
+                let cell = |i: usize| format!("r{}c{}", i / 9 + 1, i % 9 + 1);
+                let list: Vec<String> = conflicts
+                    .iter()
+                    .map(|&(a, b)| {
+                        format!("{} {}={}", resolution.grid.to_bytes()[a], cell(a), cell(b))
+                    })
+                    .collect();
+                println!("  no solution, repeated digits: {}", list.join(", "));
+            }
+            println!("  if the reading matches the picture, the puzzle itself is invalid");
+            return;
+        }
+    };
+    if block {
+        println!("  {}:\n{}", label.trim_end(), solution.display_block());
+    } else {
+        println!("  {}: {}", label, solution);
     }
 }

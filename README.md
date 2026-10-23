@@ -20,6 +20,29 @@ The program is completely parallelised.
 ```
 
 ```bash
+# read and solve sudokus from pictures (screenshots, scans or photos)
+$ ./rustoku photo grilles/030_KO0_085-3025024991.jpg
+grilles/030_KO0_085-3025024991.jpg
+  read     : ....8..........4.69.75.2....2...1..8..983.5...6...4..91.83.9.........8.2....7....
+  solution : 615483297382917456947562183523791648479836521861254379158329764796145832234678915
+
+# a picture can hold several grids; --debug saves the rectified grids
+$ ./rustoku photo -b page.jpg --debug /tmp/rustoku
+```
+
+Grids are located by their lines and their perspective is corrected, then the
+digits are recognized by a small neural network trained on digits rendered from
+hundreds of fonts with the degradations of a photo. When the digits read give a
+sudoku without solution, the least confident ones are replaced by their next best
+guesses until the solver finds one. The `vision` feature (enabled by default)
+can be disabled to build without this command. To retrain the network:
+
+```bash
+fc-list -f '%{file}\n' | cargo run --release --example gen_digits -- digits.dat
+python3 tools/train_digits.py digits.dat src/vision/digits.bin
+```
+
+```bash
 # solve sudoku
 $ echo '.816...9............4.376..6..4..5...3.....7...7..2..4..521.3............7...481.' \
 | ./rustoku solve
