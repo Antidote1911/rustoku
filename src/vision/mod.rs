@@ -52,8 +52,10 @@ fn model() -> &'static Model {
         let (inputs, hidden, outputs) = (u32_at(4), u32_at(8), u32_at(12));
         assert_eq!(outputs, 9);
         let mut floats = MODEL[16..]
-            .chunks_exact(4)
-            .map(|c| f32::from_le_bytes(c.try_into().unwrap()));
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .map(|c| f32::from_le_bytes(*c));
         let mut take = |n: usize| floats.by_ref().take(n).collect::<Vec<f32>>();
         Model {
             inputs,
